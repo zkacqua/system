@@ -25,6 +25,7 @@
             "**/Thumbs.db": true
         },
         "cSpell.words": [
+            "Acqua",
             "infile",
             "innodb",
             "mysqld"
