@@ -1,0 +1,54 @@
+version: "3.8"
+
+services:
+  redis-master:
+    image: "bitnami/redis"
+    ports:
+      - "7370:6379"
+    environment:
+      REDIS_REPLICATION_MODE: master
+      REDIS_PASSWORD: ${REDIS_MASTER_PASSWORD?:error}
+    volumes:
+      - redis_data:/bitnami/redis/data
+    restart: always
+    healthcheck:
+      test: "exit 0"
+  redis-slave-1:
+    image: "bitnami/redis"
+    ports:
+      - "16379:6379"
+    restart: always
+    depends_on:
+      - redis-master
+    environment:
+      REDIS_REPLICATION_MODE: slave
+      REDIS_MASTER_HOST: redis-master
+      REDIS_MASTER_PORT_NUMBER: 6379
+      REDIS_MASTER_PASSWORD: ${REDIS_MASTER_PASSWORD:?error}
+      REDIS_PASSWORD: ${REDIS_SLAVE_PASSWORD1:?error}
+      REDIS_DISABLE_COMMANDS: FLUSHDB,FLUSHALL
+  redis-slave-2:
+    image: "bitnami/redis"
+    ports:
+      - "17379:6379"
+    restart: always
+    depends_on:
+      - redis-master
+    environment:
+      - REDIS_REPLICATION_MODE=slave
+      - REDIS_MASTER_HOST=redis-master
+      - REDIS_MASTER_PORT_NUMBER=6379
+      - REDIS_MASTER_PASSWORD=${REDIS_MASTER_PASSWORD:?error}
+      - REDIS_PASSWORD=${REDIS_SLAVE_PASSWORD2:?error}
+      - REDIS_DISABLE_COMMANDS=FLUSHDB,FLUSHALL
+  redis-commander:
+    hostname: redis-commander
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+      REDIS_HOSTS: master:redis-master:6379:1:${REDIS_MASTER_PASSWORD},slave-1:redis-slave-1:6379:1:${REDIS_SLAVE_PASSWORD1},slave-2:redis-slave-2:6379:1:${REDIS_SLAVE_PASSWORD2}
+    ports:
+      - "8081:8081"
+
+volumes:
+  redis_data:

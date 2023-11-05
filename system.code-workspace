@@ -1,0 +1,33 @@
+{
+    "folders": [
+        {
+            "name": "Root",
+            "path": "./"
+        },
+        {
+            "name": "authorization",
+            "path": "./packages/authorization"
+        },
+        {
+            "name": "docker",
+            "path": "./packages/docker"
+        }
+    ],
+    "settings": {
+        "files.exclude": {
+            "**/node_modules": true,
+            "packages": true,
+            "**/.git": true,
+            "**/.svn": true,
+            "**/.hg": true,
+            "**/CVS": true,
+            "**/.DS_Store": true,
+            "**/Thumbs.db": true
+        },
+        "cSpell.words": [
+            "infile",
+            "innodb",
+            "mysqld"
+        ]
+    }
+}

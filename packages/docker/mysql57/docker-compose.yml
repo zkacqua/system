@@ -1,0 +1,20 @@
+version: "3"
+services:
+  mysql5.7:
+    image: mysql:5.7
+    container_name: mysql5.7
+    restart: always
+    ports:
+      - 3357:3306
+    environment:
+      MYSQL_USER: ${MYSQL_USER:?error}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD:?error}
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:?error}
+      TZ: UTC
+    volumes:
+      - ./data/conf.d:/etc/mysql/conf.d:ro
+      - ./data/logs:/var/log/mysql:rw
+      - ./data/initdb.d:/docker-entrypoint-initdb.d:ro
+    command: bash -c "chown -R mysql:mysql /var/log/mysql && exec /entrypoint.sh mysqld"
+volumes:
+  mysql57: 

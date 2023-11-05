@@ -1,0 +1,53 @@
+version: "3.8"
+services:
+  mongodb-primary:
+    image: bitnami/mongodb:latest
+    restart: always
+    ports:
+      - 21010:21010
+    environment:
+      MONGODB_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD:?error}
+      MONGODB_PORT_NUMBER: 21010
+      MONGODB_ADVERTISED_HOSTNAME: ${MONGODB_ADVERTISED_HOSTNAME:?error}
+      MONGODB_REPLICA_SET_MODE: primary
+      MONGODB_REPLICA_SET_NAME: workspacereplicaset
+      MONGODB_REPLICA_SET_KEY: RVVVkVzjoTAwvyGGkNzr6N4UqUez3ls
+    volumes:
+      - ./data:/bitnami
+
+  mongodb-secondary:
+    image: bitnami/mongodb:latest
+    depends_on:
+      - mongodb-primary
+    restart: always
+    ports:
+      - 21011:21011
+    environment:
+      MONGODB_INITIAL_PRIMARY_HOST: mongodb-primary
+      MONGODB_INITIAL_PRIMARY_PORT_NUMBER: 21010
+      MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD:?error}
+      MONGODB_ADVERTISED_HOSTNAME: ${MONGODB_ADVERTISED_HOSTNAME:?error}
+      MONGODB_PORT_NUMBER: 21011
+      MONGODB_REPLICA_SET_MODE: secondary
+      MONGODB_REPLICA_SET_NAME: workspacereplicaset
+      MONGODB_REPLICA_SET_KEY: RVVVkVzjoTAwvyGGkNzr6N4UqUez3ls
+
+  mongodb-arbiter:
+    image: bitnami/mongodb:latest
+    depends_on:
+      - mongodb-primary
+    restart: always
+    ports:
+      - 21012:21012
+    environment:
+      MONGODB_INITIAL_PRIMARY_HOST: mongodb-primary
+      MONGODB_INITIAL_PRIMARY_PORT_NUMBER: 21010
+      MONGODB_INITIAL_PRIMARY_ROOT_PASSWORD: ${MONGODB_ROOT_PASSWORD:?error}
+      MONGODB_ADVERTISED_HOSTNAME: ${MONGODB_ADVERTISED_HOSTNAME:?error}
+      MONGODB_PORT_NUMBER: 21012
+      MONGODB_REPLICA_SET_MODE: arbiter
+      MONGODB_REPLICA_SET_NAME: workspacereplicaset
+      MONGODB_REPLICA_SET_KEY: RVVVkVzjoTAwvyGGkNzr6N4UqUez3ls
+volumes:
+  mongodb38:
+    driver: local

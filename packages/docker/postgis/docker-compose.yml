@@ -1,0 +1,62 @@
+version: "3.8"
+
+volumes:
+  dbbackups:
+  postgis-data:
+
+services:
+  db:
+    image: kartoza/postgis
+    volumes:
+      - postgis-data:/var/lib/postgresql
+      - dbbackups:/backups
+    environment:
+      # If you need to create multiple database you can add coma separated databases eg gis,data
+      - POSTGRES_DB=gis
+      - POSTGRES_USER=${PSQL_DOCKER_USER}
+      - POSTGRES_PASS=${PSQL_DOCKER_PASS}
+      - ALLOW_IP_RANGE=0.0.0.0/0
+      # Add extensions you need to be enabled by default in the DB. Default are the three specified below
+      - POSTGRES_MULTIPLE_EXTENSIONS=postgis,hstore,postgis_topology,ogr_fdw
+    ports:
+      - ${PSQL_DOCKER_PORT}:5432
+    command: ["postgres", "-c", "log_statement=all"]
+    restart: always
+    healthcheck:
+      test: "exit 0"
+
+  postgisbackup:
+    image: kartoza/pg-backup
+    hostname: pg-backups
+    volumes:
+      - dbbackups:/backups
+    links:
+      - db:db
+    environment:
+      - DUMPPREFIX=PB
+      - PGUSER=${PSQL_DOCKER_USER}
+      - PGPASSWORD=${PSQL_DOCKER_PASS}
+      - PGDATABASE=gis
+      - PGPORT=5432
+      - PGHOST=db
+    restart: always
+    healthcheck:
+      test: "exit 0"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  pgadmin:
+    image: dpage/pgadmin4
+    restart: always
+    ports:
+      - 5050:80
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_PASS}
+      PGADMIN_CONFIG_CONSOLE_LOG_LEVEL: 10
+    healthcheck:
+      test: "exit 0"
+    depends_on:
+      db:
+        condition: service_healthy
